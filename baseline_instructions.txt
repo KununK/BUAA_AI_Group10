@@ -1,0 +1,83 @@
+Qwen2.5-Omni-7B 原始模型 baseline：val / test
+
+当前实验设置保持不变：
+  本目录 .venv；物理 GPU 1；BF16；SDPA；不回退 CPU。
+  原始 Thinker（含视觉与音频编码器）；不训练，不加载语音生成模块。
+  VT = 视频画面 + text_content/text；VA = 视频画面 + 原始音轨，不附加转录。
+  视频约 2 FPS，最多 32 帧，每帧最多 262144 像素；覆盖整个片段。
+  音轨通过 PyAV 转成 16kHz 单声道。
+  greedy decoding；最多生成 256 tokens；seed=42。
+  提示词不包含 views、sample_type、dominant_modality 等标签。
+
+在可访问 GPU 的终端中执行：
+cd /data/vlm/jlk/Homework/2026_2027/AI
+
+测试集 734 条，生成 Kaggle 提交文件：
+bash scripts/run_baseline.sh --split test --run-name baseline_v1
+
+更换物理 GPU（未指定时默认 GPU 1）：
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_baseline.sh --split test --run-name baseline_v1
+
+验证集 666 条，计算本地 baseline 指标：
+bash scripts/run_baseline.sh --split val --run-name baseline_v1
+
+每次运行自动创建独立目录，并在启动时打印绝对路径：
+outputs/<实验名>/<val或test>/<时间戳>/
+例如：
+outputs/baseline_v1/test/20261022_220000/submission.csv
+outputs/baseline_v1/val/20261022_223000/metrics.json
+同名实验再次执行也会创建新时间戳，不自动接着上次跑。
+
+要断点续跑，明确指定原运行目录（参数需与原运行一致）：
+bash scripts/run_baseline.sh --split test --output-dir outputs/baseline_v1/test/实际时间戳
+若需重试已有的失败记录，再加 --retry-errors。
+
+测试集输入文件：Dataset/test_release.jsonl。
+测试集无 protocol 字段时根据 sample_id 的协议/来源族识别：
+  ch_sims_v2:VT:*、gen:accept_a_svt:*、gen:accept_c_svt:* -> VT
+  ch_sims_v2:VA:*、gen:accept_a_va:* -> VA
+VT 视频即使带音轨，也保持 VT 输入方式。
+
+每次运行的文件：
+run_config.json        提示词、模型版本、数据 SHA256、推理参数
+environment.json       依赖版本、GPU、CUDA 信息
+weight_loading.json    权重加载检查
+predictions.jsonl      原始回答、解析结果、耗时、错误
+predictions.csv        当前运行的结构化预测；有失败时可能留空，仅供检查
+summary.json           样本数、协议分布、预测类别分布、失败数量
+run.log                当前运行的日志
+status.json            运行状态
+timing.json            当前执行段的推理耗时
+
+val 额外生成：
+metrics.json           情绪 F1、冲突识别率、一致样本校准率、分协议指标
+
+test 额外生成：
+submission.csv         符合 Kaggle 格式的提交文件，只在全部预测有效时生成
+submission_validation.json  提交检查报告，valid=true 时表示通过
+测试集无标签，不计算本地分数、不生成 metrics.json。
+提交使用 sample_submission.csv 的 ID 顺序，必须覆盖全部 734 条。
+检查列名、ID、重复记录、类别、yes/no、问题非空与 none 约束。
+不会通过猜测默认情绪/问题来填补推理错误。
+
+只重新评分已有 val 输出（不加载模型）：
+bash scripts/run_baseline.sh --split val --mode score --output-dir outputs/baseline_v1/val/实际时间戳
+
+只重新导出已有 test 输出（不加载模型）：
+bash scripts/run_baseline.sh --split test --mode export --output-dir outputs/baseline_v1/test/实际时间戳
+
+可选输入编码检查，不执行模型生成：
+bash scripts/run_baseline.sh --split test --mode preflight --run-name input_check
+输出 preflight.json；不是正式预测结果，不生成 submission.csv。
+
+本地 val 评分口径：
+  情绪真值暂采用 views.M12.label（根据“多模态整体”的定义推断，待官方确认）。
+  不确定目标 = Conflict 时 yes，Aligned 时 no。
+  使用全部验证集，不按 use_in_main 过滤。
+  过度判断率 = Conflict 上输出 no 的比例。
+  失败不伪造预测，计入评分分母。
+  同时报告固定三类和 sklearn 默认类别集合的 Macro-F1 与加权分数。
+  加权分数 = 0.5*Macro-F1 + 0.3*冲突识别率 + 0.2*一致样本校准率。
+  未获得官方评分源码，分数是本地代理；问题质量需另做案例分析。
+
+所有数据和实验输出仅供本课程使用，保留在本地。

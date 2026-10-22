@@ -1,0 +1,42 @@
+# Course data and downloaded archives
+/Dataset/
+/Dataset.zip
+
+# Environments and download caches
+/.venv/
+/.uv-cache/
+/.cache/
+/.python-build/
+
+# Locally cloned dependency (maintained in its own Git repository)
+/LlamaFactory/
+
+# Model weights, checkpoints, and generated experiment artifacts
+/models/
+/checkpoints/
+/outputs/
+/runs/
+/logs/
+/wandb/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+
+# Python and test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local credentials and editor files
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+.DS_Store
+*.swp
