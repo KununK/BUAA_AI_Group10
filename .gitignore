@@ -22,6 +22,20 @@
 *.ckpt
 *.pt
 *.pth
+*.bin
+*.onnx
+*.gguf
+
+# Private media and preprocessed datasets, including accidentally copied files
+*.mp4
+*.mov
+*.wav
+*.flac
+*.arrow
+*.parquet
+*.zip
+*.tar
+*.tar.gz
 
 # Python and test caches
 __pycache__/
@@ -40,3 +54,5 @@ htmlcov/
 .vscode/
 .DS_Store
 *.swp
+*.pem
+*.key

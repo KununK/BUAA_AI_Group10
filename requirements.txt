@@ -1,0 +1,22 @@
+# Major packages from the validated Python 3.12 environment.
+# Install the separate LlamaFactory checkout with: uv pip install -e ./LlamaFactory
+# The PyTorch CUDA runtime depends on the wheel index used for installation.
+torch==2.8.0
+torchvision==0.23.0
+torchaudio==2.8.0
+transformers==4.57.1
+peft==0.18.1
+trl==0.24.0
+accelerate==1.11.0
+datasets==4.0.0
+av==16.0.0
+numpy==2.5.4
+scipy==1.18.1
+pandas==2.3.3
+Pillow==11.3.0
+pyarrow==26.0.0
+scikit-learn==1.9.1
+PyYAML==6.0.3
+safetensors==0.8.0
+huggingface-hub==0.36.2
+tensorboard==2.21.0
